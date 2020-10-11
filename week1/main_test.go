@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"testing"
+	"GOlang-HWs/week1/mydirtree"
 )
 
 const testFullResult = `├───project
@@ -38,7 +39,7 @@ const testFullResult = `├───project
 
 func TestTreeFull(t *testing.T) {
 	out := new(bytes.Buffer)
-	err := dirTree(out, "testdata", true)
+	err := mydirtree.DirTree(out, "testdata", true)
 	if err != nil {
 		t.Errorf("test for OK Failed - error")
 	}
@@ -64,7 +65,7 @@ const testDirResult = `├───project
 
 func TestTreeDir(t *testing.T) {
 	out := new(bytes.Buffer)
-	err := dirTree(out, "testdata", false)
+	err := mydirtree.DirTree(out, "testdata", false)
 	if err != nil {
 		t.Errorf("test for OK Failed - error")
 	}
