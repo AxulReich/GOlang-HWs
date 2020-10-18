@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-func DirTree(output io.Writer, path string, printFiles bool) error {
+func DirTree(out io.Writer, path string, printFiles bool) error {
 	absPath, err := filepath.Abs(path)
 	if err != nil {
 		return err
@@ -20,10 +20,10 @@ func DirTree(output io.Writer, path string, printFiles bool) error {
 		return err
 	}
 
-	return dirWalk(dirFilesLists, output, path, "", printFiles)
+	return dirWalk(dirFilesLists, out, path, "", printFiles)
 }
 
-func dirWalk(dirFileList []os.FileInfo, output io.Writer, root string, prefix string, printFiles bool) error {
+func dirWalk(dirFileList []os.FileInfo, out io.Writer, root string, prefix string, printFiles bool) error {
 	dirfilePrefix := prefix + "├───"
 	walkPrefix := prefix + "│\t"
 
@@ -34,7 +34,7 @@ func dirWalk(dirFileList []os.FileInfo, output io.Writer, root string, prefix st
 		}
 
 		if file.IsDir() {
-			if _, err := fmt.Fprintln(output, dirfilePrefix+file.Name()); err != nil {
+			if _, err := fmt.Fprintln(out, dirfilePrefix+file.Name()); err != nil {
 				return err
 			}
 
@@ -44,7 +44,7 @@ func dirWalk(dirFileList []os.FileInfo, output io.Writer, root string, prefix st
 				return err
 			}
 
-			err = dirWalk(dirFileListInternal, output, newPath, walkPrefix, printFiles)
+			err = dirWalk(dirFileListInternal, out, newPath, walkPrefix, printFiles)
 			if err != nil {
 				return err
 			}
@@ -56,7 +56,7 @@ func dirWalk(dirFileList []os.FileInfo, output io.Writer, root string, prefix st
 				size = size + "b"
 			}
 
-			if _, err := fmt.Fprintln(output, dirfilePrefix+file.Name()+" ("+size+")"); err != nil {
+			if _, err := fmt.Fprintln(out, dirfilePrefix+file.Name()+" ("+size+")"); err != nil {
 				return err
 			}
 		}
