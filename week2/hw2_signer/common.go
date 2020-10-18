@@ -137,53 +137,41 @@ func SingleHash() {
 //порядке расчета (0..5), где data - то что пришло на вход (и ушло на выход из SingleHash)
 
 func MultiHash() {
+	data := "4108050209~502633748"
+
 	defer timeTrack(time.Now(), "MultiHash")
+	mu := &sync.Mutex{}
+	wg := &sync.WaitGroup{}
 
 	type threadVal struct {
 		th  int
 		val string
 	}
 
-	wg := &sync.WaitGroup{}
-
 	crc32Chan := make(chan threadVal)
-	crc32ChanOut := make(chan threadVal)
-
-	data := "4108050209~502633748"
-
-	go func(in chan threadVal, out chan threadVal, waiter * sync.WaitGroup) {
-
-		for th := 0; th < 6; th++ {
-			wg.Add(1)
-			go func(inIn chan threadVal, outOut chan threadVal,waiter * sync.WaitGroup) {
-				defer waiter.Done()
-				thrV := <- inIn
-				thrV.val = DataSignerCrc32(thrV.val)
-				outOut <- thrV
-			}(in, out, wg)
-
-			crc32Chan <- threadVal{ th, strconv.Itoa(th) + data}
-		}
-		wg.Wait()
-		close(out)
-
-	}(crc32Chan, crc32ChanOut, wg)
-
 	var intermResult = make(map[int]string, 6)
 
-	// может можно и без continue?
-	for thVal := range crc32ChanOut {
-		//if thVal.val == "" {
-		//
-		//	fmt.Println("f0")
-		//	continue
-		//}
-		intermResult[thVal.th] = thVal.val
+	for th := 0; th < 6; th++ {
+		wg.Add(1)
+		go func(inIn chan threadVal, hashMap map[int]string, mu * sync.Mutex, waiter *sync.WaitGroup) {
+			defer waiter.Done()
+			thrV := <- inIn
+			thrV.val = DataSignerCrc32(thrV.val)
+			mu.Lock()
+			hashMap[thrV.th] = thrV.val
+			mu.Unlock()
+		}(crc32Chan, intermResult, mu, wg)
+
+		crc32Chan <- threadVal{ th, strconv.Itoa(th) + data}
 	}
+	wg.Wait()
+
 	result := ""
 
 	for i := 0; i < 6; i++ {
+		mu.Lock()
 		result += intermResult[i]
+		mu.Unlock()
 	}
 	fmt.Println(result)
 
